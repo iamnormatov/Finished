@@ -1,10 +1,13 @@
 package com.example.finished.model;
 
+import com.example.finished.dto.AccountDto;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -27,8 +30,10 @@ public class User {
     private String email;
     private String password;
 
-    @OneToMany(mappedBy = "user_id", fetch = FetchType.EAGER)
-    private Set<Account> accounts;
+
+
+//    @OneToMany(mappedBy = "user_id", fetch = FetchType.EAGER)
+//    private Set<Account> accounts;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -22,8 +22,6 @@ public class Account {
     private Float amount;
     private Integer currencyId;
 
-
-
 //    @ManyToOne(fetch = FetchType.EAGER)
 //    @JoinColumn(name = "currencyId", referencedColumnName = "userId", insertable = false, updatable = false)
 //    private Currency currency;

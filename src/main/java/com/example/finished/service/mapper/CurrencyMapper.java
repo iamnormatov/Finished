@@ -27,15 +27,14 @@ public abstract class CurrencyMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
     @Mapping(target = "account", ignore = true)
-
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     public abstract void update(CurrencyDto currencyDto, @MappingTarget Currency currency);
 
     @Mapping(target = "account", expression = "java(currency.getAccount().stream().map(this.accountMapper::toDto).collect(Collectors.toSet()))")
     public abstract CurrencyDto toDtoWithCurrency(Currency currency);
 
-    public void view(Currency currency){
-        CurrencyDto currencyDto = new CurrencyDto();
-        currencyDto.setAccount(currency.getAccount().stream().map(this.accountMapper::toDto).collect(Collectors.toSet()));
-    }
+//    public void view(Currency currency){
+//        CurrencyDto currencyDto = new CurrencyDto();
+//        currencyDto.setAccount(currency.getAccount().stream().map(this.accountMapper::toDto).collect(Collectors.toSet()));
+//    }
 }

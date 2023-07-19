@@ -50,18 +50,18 @@ public class CurrencyService implements SimpleCRUD<Integer, CurrencyDto> {
 
     @Override
     public ResponseDto<CurrencyDto> get(Integer entityId) {
-        Optional<Currency> optional = this.currencyRepository.findByCurrencyIdAndDeletedAtIsNull(entityId);
-        if (optional.isEmpty()){
-            return ResponseDto.<CurrencyDto>builder()
-                    .code(-2)
-                    .message("User is not found")
-                    .build();
-        }
-        return ResponseDto.<CurrencyDto>builder()
-                .success(true)
-                .message("OK")
-                .data(this.currencyMapper.toDto(optional.get()))
-                .build();
+       return this.currencyRepository.findByCurrencyIdAndDeletedAtIsNull(entityId)
+                .map(currency -> ResponseDto.<CurrencyDto>builder()
+                        .success(true)
+                        .message("OK")
+                        .data(this.currencyMapper.toDtoWithCurrency(currency))
+                        .build()
+                )
+                .orElse(ResponseDto.<CurrencyDto>builder()
+                        .code(-2)
+                        .message("User is not found")
+                        .build()
+                );
     }
 
     @Override
@@ -73,23 +73,23 @@ public class CurrencyService implements SimpleCRUD<Integer, CurrencyDto> {
                     .error(error)
                     .build();
         }
-        Optional<Currency> optional = this.currencyRepository.findByCurrencyIdAndDeletedAtIsNull(entityId);
-        if (optional.isEmpty()){
-            return ResponseDto.<CurrencyDto>builder()
-                    .code(-2)
-                    .message("User is not found")
-                    .build();
-        }
         try {
-            Currency currency = optional.get();
-            this.currencyMapper.update(dto, currency);
-            currency.setUpdatedAt(LocalDateTime.now());
-            this.currencyRepository.save(currency);
-            return ResponseDto.<CurrencyDto>builder()
-                    .success(true)
-                    .message("OK")
-                    .data(this.currencyMapper.toDto(currency))
-                    .build();
+            return this.currencyRepository.findByCurrencyIdAndDeletedAtIsNull(entityId)
+                    .map(currency -> {
+                        this.currencyMapper.update(dto, currency);
+                        currency.setUpdatedAt(LocalDateTime.now());
+                        this.currencyRepository.save(currency);
+                        return ResponseDto.<CurrencyDto>builder()
+                                .success(true)
+                                .message("OK")
+                                .data(this.currencyMapper.toDto(currency))
+                                .build();
+                    })
+                    .orElse(ResponseDto.<CurrencyDto>builder()
+                            .code(-2)
+                            .message("User is not found")
+                            .build()
+                    );
         }catch (Exception e){
             return ResponseDto.<CurrencyDto>builder()
                     .code(-2)
@@ -100,20 +100,20 @@ public class CurrencyService implements SimpleCRUD<Integer, CurrencyDto> {
 
     @Override
     public ResponseDto<CurrencyDto> delete(Integer entityId) {
-        Optional<Currency> optional = this.currencyRepository.findByCurrencyIdAndDeletedAtIsNull(entityId);
-        if (optional.isEmpty()){
-            return ResponseDto.<CurrencyDto>builder()
-                    .code(-2)
-                    .message("User is not found")
-                    .build();
-        }
-        Currency currency = optional.get();
-        currency.setDeletedAt(LocalDateTime.now());
-        this.currencyRepository.save(currency);
-        return ResponseDto.<CurrencyDto>builder()
-                .success(true)
-                .message("OK")
-                .data(this.currencyMapper.toDto(currency))
-                .build();
+       return this.currencyRepository.findByCurrencyIdAndDeletedAtIsNull(entityId)
+                .map(currency -> {
+                    currency.setDeletedAt(LocalDateTime.now());
+                    this.currencyRepository.save(currency);
+                    return ResponseDto.<CurrencyDto>builder()
+                            .success(true)
+                            .message("OK")
+                            .data(this.currencyMapper.toDto(currency))
+                            .build();
+                })
+                .orElse(ResponseDto.<CurrencyDto>builder()
+                        .code(-2)
+                        .message("User is not found")
+                        .build()
+                );
     }
 }

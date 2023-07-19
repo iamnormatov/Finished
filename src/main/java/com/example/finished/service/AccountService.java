@@ -19,36 +19,29 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class AccountService implements SimpleCRUD<Integer, AccountDto> {
-    private final AccountRepository accountRepository;
     private final CurrencyRepository currencyRepository;
     private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
 
     @Override
     public ResponseDto<AccountDto> create(AccountDto dto) {
-        Optional<Account> optionalAccount = this.accountRepository.findByAccountIdAndDeletedAtIsNull(dto.getUserId());
-        if (optionalAccount.isEmpty()){
-            return ResponseDto.<AccountDto>builder()
-                    .code(-2)
-                    .message("User is not found")
-                    .build();
-        }
         Optional<User> optionalUser = this.userRepository.findByUserIdAndDeletedAtIsNull(dto.getUserId());
-        if (optionalUser.isEmpty()){
+        if (optionalUser.isEmpty()) {
             return ResponseDto.<AccountDto>builder()
                     .code(-2)
                     .message("User is not found")
                     .build();
         }
         Optional<Currency> optionalCurrency = this.currencyRepository.findByCurrencyIdAndDeletedAtIsNull(dto.getCurrencyId());
-        if (optionalCurrency.isEmpty()){
-           return ResponseDto.<AccountDto>builder()
-                   .code(-2)
-                   .message("Currency is not found")
-                   .build();
+        if (optionalCurrency.isEmpty()) {
+            return ResponseDto.<AccountDto>builder()
+                    .code(-2)
+                    .message("Currency is not found")
+                    .build();
         }
         try {
-            Account account = optionalAccount.get();
+            Account account = this.accountMapper.toEntity(dto);
             account.setCreatedAt(LocalDateTime.now());
             this.accountRepository.save(account);
             return ResponseDto.<AccountDto>builder()
@@ -56,7 +49,7 @@ public class AccountService implements SimpleCRUD<Integer, AccountDto> {
                     .message("OK")
                     .data(this.accountMapper.toDto(account))
                     .build();
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseDto.<AccountDto>builder()
                     .code(-2)
                     .message(String.format("Account while saving error::%s", e.getMessage()))
@@ -66,54 +59,54 @@ public class AccountService implements SimpleCRUD<Integer, AccountDto> {
 
     @Override
     public ResponseDto<AccountDto> get(Integer entityId) {
-        Optional<Account> optionalAccount = this.accountRepository.findByAccountIdAndDeletedAtIsNull(entityId);
-        if (optionalAccount.isEmpty()){
-            return ResponseDto.<AccountDto>builder()
-                    .code(-2)
-                    .message("Account is not found")
-                    .build();
-        }
-        return ResponseDto.<AccountDto>builder()
-                .success(true)
-                .message("OK")
-                .data(this.accountMapper.toDto(optionalAccount.get()))
-                .build();
+        return this.accountRepository.findByAccountIdAndDeletedAtIsNull(entityId)
+                .map(account -> ResponseDto.<AccountDto>builder()
+                        .success(true)
+                        .message("OK")
+                        .data(this.accountMapper.toDto(account))
+                        .build()
+                )
+                .orElse(ResponseDto.<AccountDto>builder()
+                        .code(-2)
+                        .message("Account is not found")
+                        .build()
+                );
     }
 
     @Override
     public ResponseDto<AccountDto> update(AccountDto dto, Integer entityId) {
-        Optional<Account> optionalAccount = this.accountRepository.findByAccountIdAndDeletedAtIsNull(entityId);
-        if (optionalAccount.isEmpty()){
-            return ResponseDto.<AccountDto>builder()
-                    .code(-2)
-                    .message("Account is not found")
-                    .build();
-        }
         Optional<User> optionalUser = this.userRepository.findByUserIdAndDeletedAtIsNull(dto.getUserId());
-        if (optionalUser.isEmpty()){
+        if (optionalUser.isEmpty()) {
             return ResponseDto.<AccountDto>builder()
                     .code(-2)
                     .message("User is not found")
                     .build();
         }
         Optional<Currency> optionalCurrency = this.currencyRepository.findByCurrencyIdAndDeletedAtIsNull(dto.getCurrencyId());
-        if (optionalCurrency.isEmpty()){
+        if (optionalCurrency.isEmpty()) {
             return ResponseDto.<AccountDto>builder()
                     .code(-2)
                     .message("Currency is not found")
                     .build();
         }
         try {
-            Account account = optionalAccount.get();
-            this.accountMapper.update(dto, account);
-            account.setUpdatedAt(LocalDateTime.now());
-            this.accountRepository.save(account);
-            return ResponseDto.<AccountDto>builder()
-                    .success(true)
-                    .message("OK")
-                    .data(this.accountMapper.toDto(account))
-                    .build();
-        }catch (Exception e){
+            return this.accountRepository.findByAccountIdAndDeletedAtIsNull(entityId)
+                    .map(account -> {
+                        this.accountMapper.update(dto, account);
+                        account.setUpdatedAt(LocalDateTime.now());
+                        this.accountRepository.save(account);
+                        return ResponseDto.<AccountDto>builder()
+                                .success(true)
+                                .message("OK")
+                                .data(this.accountMapper.toDto(account))
+                                .build();
+                    })
+                    .orElse(ResponseDto.<AccountDto>builder()
+                            .code(-2)
+                            .message("Account is not found")
+                            .build()
+                    );
+        } catch (Exception e) {
             return ResponseDto.<AccountDto>builder()
                     .code(-2)
                     .message(String.format("Account while updating error :: %s", e.getMessage()))
@@ -123,20 +116,20 @@ public class AccountService implements SimpleCRUD<Integer, AccountDto> {
 
     @Override
     public ResponseDto<AccountDto> delete(Integer entityId) {
-        Optional<Account> optionalAccount = this.accountRepository.findByAccountIdAndDeletedAtIsNull(entityId);
-        if (optionalAccount.isEmpty()){
-            return ResponseDto.<AccountDto>builder()
-                    .code(-2)
-                    .message("Account is not found")
-                    .build();
-        }
-        Account account = optionalAccount.get();
-        account.setDeletedAt(LocalDateTime.now());
-        this.accountRepository.save(account);
-        return ResponseDto.<AccountDto>builder()
-                .success(true)
-                .message("OK")
-                .data(this.accountMapper.toDto(account))
-                .build();
+       return this.accountRepository.findByAccountIdAndDeletedAtIsNull(entityId)
+                .map(account -> {
+                    account.setDeletedAt(LocalDateTime.now());
+                    this.accountRepository.save(account);
+                    return ResponseDto.<AccountDto>builder()
+                            .success(true)
+                            .message("OK")
+                            .data(this.accountMapper.toDto(account))
+                            .build();
+                })
+                .orElse(ResponseDto.<AccountDto>builder()
+                        .code(-2)
+                        .message("Account is not found")
+                        .build()
+                );
     }
 }

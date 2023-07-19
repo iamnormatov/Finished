@@ -15,6 +15,7 @@ public abstract class UserMapper {
     protected AccountMapper accountMapper;
     @Mapping(target = "account", ignore = true)
     public abstract UserDto toDto(User user);
+
     @Mapping(target = "userId", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
@@ -30,8 +31,8 @@ public abstract class UserMapper {
     @Mapping(target = "account", expression = "java(user.getAccounts().stream().map(this.accountMapper::toDto).collect(Collectors.toSet()))")
     public abstract UserDto toDtoWithAccount(User user);
 
-    public void view(User user){
-        UserDto userDto = new UserDto();
-        userDto.setAccount(user.getAccounts().stream().map(this.accountMapper::toDto).collect(Collectors.toSet()));
-    }
+//    public void view(User user){
+//        UserDto userDto = new UserDto();
+//        userDto.setAccount(user.getAccounts().stream().map(this.accountMapper::toDto).collect(Collectors.toSet()));
+//    }
 }

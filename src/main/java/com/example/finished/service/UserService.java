@@ -27,7 +27,7 @@ public class UserService implements SimpleCRUD<Integer, UserDto> {
     @Override
     public ResponseDto<UserDto> create(UserDto dto) {
         List<ErrorDto> errors = this.userValidation.validate(dto);
-        if (!errors.isEmpty()){
+        if (!errors.isEmpty()) {
             return ResponseDto.<UserDto>builder()
                     .code(-3)
                     .error(errors)
@@ -42,7 +42,7 @@ public class UserService implements SimpleCRUD<Integer, UserDto> {
                     .message("OK")
                     .data(this.userMapper.toDto(user))
                     .build();
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseDto.<UserDto>builder()
                     .message(String.format("User while saving error %s", e.getMessage()))
                     .code(-2)
@@ -52,49 +52,45 @@ public class UserService implements SimpleCRUD<Integer, UserDto> {
 
     @Override
     public ResponseDto<UserDto> get(Integer entityId) {
-        Optional<User> optional = this.userRepository.findByUserIdAndDeletedAtIsNull(entityId);
-        if (optional.isEmpty()){
-            return ResponseDto.<UserDto>builder()
-                    .code(-1)
-                    .message("User is not found")
-                    .build();
-        }
-        return ResponseDto.<UserDto>builder()
-                .success(true)
-                .message("OK")
-                .data(this.userMapper.toDtoWithAccount(optional.get()))
-                .build();
+        return this.userRepository.findByUserIdAndDeletedAtIsNull(entityId)
+                .map(user -> ResponseDto.<UserDto>builder()
+                        .success(true)
+                        .message("OK")
+                        .data(this.userMapper.toDtoWithAccount(user))
+                        .build())
+                .orElse(ResponseDto.<UserDto>builder()
+                        .code(-1)
+                        .message("User is not found")
+                        .build());
+
     }
 
     @Override
     public ResponseDto<UserDto> update(UserDto dto, Integer entityId) {
         List<ErrorDto> errors = this.userValidation.validate(dto);
-        if (!errors.isEmpty()){
+        if (!errors.isEmpty()) {
             return ResponseDto.<UserDto>builder()
                     .code(-3)
                     .error(errors)
                     .build();
         }
-
-        Optional<User> optional = this.userRepository.findByUserIdAndDeletedAtIsNull(entityId);
-        if (optional.isEmpty()){
-            return ResponseDto.<UserDto>builder()
-                    .code(-1)
-                    .message("User is not found")
-                    .build();
-        }
-
         try {
-            User user = optional.get();
-            this.userMapper.update(dto, user);
-            user.setUpdatedAt(LocalDateTime.now());
-            this.userRepository.save(user);
-            return ResponseDto.<UserDto>builder()
-                    .success(true)
-                    .message("OK")
-                    .data(this.userMapper.toDto(user))
-                    .build();
-        }catch (Exception e){
+            return this.userRepository.findByUserIdAndDeletedAtIsNull(entityId)
+                    .map(user -> {
+                        this.userMapper.update(dto, user);
+                        user.setUpdatedAt(LocalDateTime.now());
+                        this.userRepository.save(user);
+                        return ResponseDto.<UserDto>builder()
+                                .success(true)
+                                .message("OK")
+                                .data(this.userMapper.toDto(user))
+                                .build();
+                    })
+                    .orElse(ResponseDto.<UserDto>builder()
+                            .code(-1)
+                            .message("User is not found")
+                            .build());
+        } catch (Exception e) {
             return ResponseDto.<UserDto>builder()
                     .message(String.format("User while updating error %s", e.getMessage()))
                     .code(-2)
@@ -104,20 +100,19 @@ public class UserService implements SimpleCRUD<Integer, UserDto> {
 
     @Override
     public ResponseDto<UserDto> delete(Integer entityId) {
-        Optional<User> optional = this.userRepository.findByUserIdAndDeletedAtIsNull(entityId);
-        if (optional.isEmpty()){
-            return ResponseDto.<UserDto>builder()
-                    .code(-1)
-                    .message("User is not found")
-                    .build();
-        }
-        User user = optional.get();
-        user.setDeletedAt(LocalDateTime.now());
-        this.userRepository.save(user);
-        return ResponseDto.<UserDto>builder()
-                .success(true)
-                .message("OK")
-                .data(this.userMapper.toDto(user))
-                .build();
+       return this.userRepository.findByUserIdAndDeletedAtIsNull(entityId)
+                .map(user -> {
+                    user.setDeletedAt(LocalDateTime.now());
+                    this.userRepository.save(user);
+                    return ResponseDto.<UserDto>builder()
+                            .success(true)
+                            .message("OK")
+                            .data(this.userMapper.toDto(user))
+                            .build();
+                })
+                .orElse(ResponseDto.<UserDto>builder()
+                        .code(-1)
+                        .message("User is not found")
+                        .build());
     }
 }

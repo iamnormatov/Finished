@@ -22,8 +22,8 @@ public class Currency {
     private String shortName;
     private Float usdDifference;
 
-    @OneToMany(mappedBy = "currencyId", fetch = FetchType.EAGER)
-    private Set<Account> account;
+//    @OneToMany(mappedBy = "currencyId", fetch = FetchType.EAGER)
+//    private Set<Account> account;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
